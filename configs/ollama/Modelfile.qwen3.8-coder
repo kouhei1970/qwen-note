@@ -19,8 +19,12 @@
 #   (b) Ollama.app は OLLAMA_CONTEXT_LENGTH を VRAM から自動算出した値
 #       （このマシンでは 262144）で上書きし、launchctl setenv での指定は
 #       効かない。Modelfile の num_ctx はそれより優先される。
-#   (c) 262144 のままロードすると KV キャッシュ確保が巨大になるため、
-#       実用上限として 98304 に固定した。
+#   (c) 98304 は当初「qwen-code に申告する contextWindowSize 65536 の
+#       1.5 倍の余裕」として決めた値（65536 × 1.5）。その後 contextWindowSize
+#       を num_ctx と一致させる方針に変えたため、96K という値だけが残っている。
+#       512 GB のこのマシンではメモリは制約にならず（ロード時 32 GB）、上限を
+#       決めているのは cold prefill 時間（約 400 tok/s）と自動圧縮の発火位置。
+#       131072 / 262144 との比較ベンチは未実施。
 #   (d) temperature 0.7 / top_p 0.8 / top_k 20 / min_p 0 は Qwen3 系で
 #       公式に推奨されている non-thinking 用サンプリング値。thinking を
 #       切ってコーディングに使うためこちらを採用した。
