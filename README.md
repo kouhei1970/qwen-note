@@ -68,6 +68,12 @@ Qwen Code (CLI) --OpenAI互換 /v1--> Ollama.app (MLX ランナー) --> qwen3.8-
 - **`num_ctx` は Modelfile でしか固定できません。** OpenAI 互換 `/v1` 経由のリクエストには Ollama の `options` を乗せられないため、クライアント側からコンテキスト長を指定する手段がありません。
 - **Ollama.app は `OLLAMA_CONTEXT_LENGTH` を自動算出した値で上書きします。** このマシンでは VRAM から `262144` が算出され、`launchctl setenv OLLAMA_CONTEXT_LENGTH ...` を指定しても反映されません（サーバログでも `OLLAMA_CONTEXT_LENGTH:262144` のままでした）。Modelfile の `PARAMETER num_ctx` はこれより優先されるため、実質的にコンテキスト長を固定する唯一の手段になっています。
 
+「VRAM から自動算出」の中身は次のとおりです（Ollama v0.32.13 の `server/routes.go` とこのマシンのログで確認）。
+
+- サーバ起動時に GPU メモリ合計 `totalVRAM` を見て、**≥47 GiB → 262144 / ≥23 GiB → 32768 / それ未満 → 4096** の 3 段階で既定値を決めています。ログには `msg="vram-based default context" total_vram="464.0 GiB" default_num_ctx=262144` と出ます。
+- Apple Silicon には専用 VRAM がないため、Metal が「GPU が使ってよい上限」として報告する値（ユニファイドメモリ 512 GB のうち約 464 GiB。残りは OS 用の予約）がそのまま `totalVRAM` になります。48 GB 以上の Mac なら同じく最上段の 262144 になるはずで、512 GB だから特別大きいわけではありません。
+- Ollama.app は初回起動時（env が `OLLAMA_CONTEXT_LENGTH:0` の状態）に算出したこの値を自分の設定 DB（`~/Library/Application Support/Ollama/db.sqlite` の `settings.context_length`）に保存し、以後の起動では環境変数 `OLLAMA_CONTEXT_LENGTH=262144` として `ollama serve` に渡します。`launchctl setenv` が効かないのはこのためです。Ollama.app の設定画面の Context length を変えればこの値も変わるはずですが、私は試していません（未検証）。
+
 ## 4. Ollama 側の設定
 
 ### 4-1. 環境変数（LaunchAgent + スクリプト）
