@@ -178,7 +178,7 @@ ollama show qwen3.8-coder:27b
 | `generationConfig.maxRetries` | `1` | 5-1 章参照 |
 | `generationConfig.contextWindowSize` | `98304` | Modelfile の `num_ctx` と一致させる。5-2 章参照 |
 | `generationConfig.samplingParams` | `{temperature: 0.7, top_p: 0.8, max_tokens: 32768}` | Modelfile と揃える。`max_tokens` は大きなファイル生成が途中で途切れないようにするため |
-| `generationConfig.extra_body.reasoning_effort` | `"none"` | 5-3 章参照 |
+| `generationConfig.extra_body.reasoning_effort` | `"none"` | 5-3 章参照。thinking を使う／上げる方法は 5-4 章 |
 | `model.maxSessionTurns` / `maxWallTimeSeconds` / `maxToolCalls` | `200` / `3600` / `500` | 自律実行（`qwen --yolo`）の暴走を止める上限 |
 | `mcpServers` | `playwright`（ローカル Web アプリの画面確認）、`ddg-search`（鍵なし検索。10 章） | MCP は起動時に接続。不要な段階では `--allowed-mcp-server-names "none"` で切る |
 | `general.enableAutoUpdate` | `false` | 更新で挙動が変わるタイミングを自分で決めたいため |
@@ -219,6 +219,35 @@ Ollama 0.32.13 の `/v1/chat/completions` で Qwen3 系の thinking を切るパ
 - `reasoning_effort: "low"`（トークン数がベースラインと変わらなかった）
 
 `/v1` エンドポイントは未知のフィールドを黙って捨てるため、「エラーが出ない＝効いている」ではありません。検証は `usage.completion_tokens` の値か、返ってくる `reasoning_content` の長さで行う必要があります。実測では、「17*23 は?」という質問に対して `completion_tokens` が `54`（thinking あり）から `3`（`reasoning_effort: "none"`）まで減りました。
+
+### 5-4. thinking を使う／「レベルを上げる」には
+
+結論から書くと、**Ollama 0.32.13 ＋ qwen3.8 では thinking は on / off の 2 値で、`low` / `medium` / `high` の段階は量を変えません。** 2026-08-19 に同じ論理パズル（3 人の正直者・嘘つき問題）を temperature 0 で投げて測った結果です。
+
+| 指定 | completion_tokens | thinking 文字数 | 答え |
+|---|---|---|---|
+| `/v1` 未指定（既定） | 834 | 1,437 | 正解 |
+| `/v1` `reasoning_effort: "none"` | 291 | 0 | 正解 |
+| `/v1` `reasoning_effort: "low"` | 693 | 1,435 | 正解 |
+| `/v1` `reasoning_effort: "medium"` | 844 | 1,447 | 正解 |
+| `/v1` `reasoning_effort: "high"` | 376 | 1,110 | 正解 |
+| `/api/chat` `think: false` | 345 | 0 | — |
+| `/api/chat` `think: true` | 826 | 1,355 | — |
+| `/api/chat` `think: "low"` | 609 | 1,184 | — |
+| `/api/chat` `think: "high"` | 477 | 1,380 | — |
+
+`none` / `false` だけが thinking を消し、それ以外はどれも 1,100〜1,450 文字の thinking が出て量に差がありません（`high` が少ないのは揺らぎの範囲で、増える方向ではない）。ネイティブ `/api/chat` の `think: "low"` / `"high"` もエラーにはならず受理されますが、同じく量は変わりません。所要時間は同時に別の qwen セッションが走っていて `OLLAMA_NUM_PARALLEL=1` の待ち行列に入ったため省きます。thinking の予算（`thinking_budget`）を段階的に効かせたいなら、現状は vLLM / LM Studio 側の機能で、Ollama にはありません（`settings.json` の LM Studio 用エントリが `extra_body.enable_thinking: true` を使っているのはそのため。`thinking_budget` の効果は未検証）。
+
+つまり「レベルを上げる」＝「thinking を on にする」です。qwen-code 側での切り替え方は次のとおりです。
+
+1. **`/model` で `qwen3.8:27b-mlx (thinking)` を選ぶ。** `reasoning_effort` を付けていないエントリなので thinking が有効になります（5 章の表の 2 番目のプロバイダ）。
+2. **主力エントリの `extra_body.reasoning_effort` を `"none"` 以外にする**（値は何でも同じ。削除でも可）。`none` 以外＝on です。
+3. `generationConfig.reasoning: false`（qwen-code の統一設定）は使わない。qwen-code はこれを Qwen 系の非 DashScope プロバイダに対して `chat_template_kwargs.enable_thinking: false` として送りますが、Ollama はそれを無視します（5-3 章）。だから `extra_body.reasoning_effort` で直接指定しています。
+4. qwen-code には `/effort low|medium|high|xhigh|max` コマンドと `model.reasoningEffort` 設定もあります。ただし段階を線形に転送するのは DashScope（qwen3.8-max 系）・DeepSeek・GLM 向けの実装で、Ollama のような汎用 OpenAI 互換プロバイダにそのまま届くかは未検証です。いずれにせよ `extra_body` が最優先で解決されるので、Ollama では `extra_body.reasoning_effort` を書き換える方が確実です。
+5. thinking は completion トークンを消費します。`max_tokens: 32768` を下げないこと。
+6. サンプリング: thinking 用エントリは現状 `temperature 0.7 / top_p 0.8`（non-thinking 向けの値）のまま使っています。ベースモデル `qwen3.8:27b-mlx` の配布既定は `temperature 1 / top_p 0.95` で、どちらが thinking 時に良いかは未検証です。
+
+使い分けの目安は、コーディングの実作業（編集・実行・検証の反復）は off で速度を取り、設計判断やバグの原因推定のような「考える」ターンだけ thinking エントリに切り替える、です。「17×23 は?」では 54 → 3 トークン、上のパズルでは 834 → 291 トークンの差があり、どちらも答えは同じでした。
 
 ## 6. QWEN.md（モデルへのグローバル指示）
 
