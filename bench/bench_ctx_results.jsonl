@@ -1,0 +1,12 @@
+{"tag": "calib", "num_ctx": 16384, "prompt_tokens": 3892, "prefill_tps": 401.4, "gen_tokens": 16, "decode_tps": 51.01, "load_s": 0.0, "prefill_s": 9.7, "wall_s": 10.3, "loaded_size": "32 GB"}
+{"tag": "alloc-16384", "num_ctx": 16384, "prompt_tokens": 4052, "prefill_tps": 416.7, "gen_tokens": 52, "decode_tps": 53.88, "load_s": 0.0, "prefill_s": 9.7, "wall_s": 10.8, "loaded_size": "29 GB"}
+{"tag": "alloc-32768", "num_ctx": 32768, "prompt_tokens": 3582, "prefill_tps": 421.5, "gen_tokens": 36, "decode_tps": 51.72, "load_s": 0.0, "prefill_s": 8.5, "wall_s": 9.2, "loaded_size": "29 GB"}
+{"tag": "alloc-65536", "num_ctx": 65536, "prompt_tokens": 3635, "prefill_tps": 418.6, "gen_tokens": 31, "decode_tps": 51.31, "load_s": 0.0, "prefill_s": 8.7, "wall_s": 9.3, "loaded_size": "30 GB"}
+{"tag": "alloc-98304", "num_ctx": 98304, "prompt_tokens": 3847, "prefill_tps": 416.1, "gen_tokens": 45, "decode_tps": 46.9, "load_s": 0.0, "prefill_s": 9.2, "wall_s": 10.2, "loaded_size": "31 GB"}
+{"tag": "alloc-131072", "num_ctx": 131072, "prompt_tokens": 3805, "prefill_tps": 419.1, "gen_tokens": 35, "decode_tps": 54.93, "load_s": 0.0, "prefill_s": 9.1, "wall_s": 9.8, "loaded_size": "31 GB"}
+{"tag": "alloc-262144", "num_ctx": 262144, "prompt_tokens": 3838, "prefill_tps": 418.3, "gen_tokens": 34, "decode_tps": 50.14, "load_s": 0.0, "prefill_s": 9.2, "wall_s": 9.9, "loaded_size": "32 GB"}
+{"tag": "fill-8000", "num_ctx": 262144, "prompt_tokens": 7707, "prefill_tps": 411.7, "gen_tokens": 19, "decode_tps": 45.64, "load_s": 0.0, "prefill_s": 18.7, "wall_s": 19.2, "loaded_size": "31 GB"}
+{"tag": "fill-32000", "num_ctx": 262144, "prompt_tokens": 31349, "prefill_tps": 371.8, "gen_tokens": 59, "decode_tps": 50.2, "load_s": 0.0, "prefill_s": 84.3, "wall_s": 85.6, "loaded_size": "33 GB"}
+{"tag": "fill-64000", "num_ctx": 262144, "prompt_tokens": 60715, "prefill_tps": 325.8, "gen_tokens": 40, "decode_tps": 41.37, "load_s": 0.0, "prefill_s": 186.4, "wall_s": 187.5, "loaded_size": "32 GB"}
+{"tag": "fill-96000", "num_ctx": 262144, "prompt_tokens": 97948, "prefill_tps": 275.7, "gen_tokens": 46, "decode_tps": 30.02, "load_s": 0.0, "prefill_s": 355.3, "wall_s": 357.0, "loaded_size": "32 GB"}
+{"tag": "fill-128000", "num_ctx": 262144, "prompt_tokens": 124173, "prefill_tps": 248.1, "gen_tokens": 42, "decode_tps": 23.69, "load_s": 0.0, "prefill_s": 500.6, "wall_s": 502.5, "loaded_size": "32 GB"}

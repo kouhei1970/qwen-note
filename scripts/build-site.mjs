@@ -127,8 +127,8 @@ const customRenderer = {
   link({ href, title, tokens }) {
     const text = this.parser.parseInline(tokens);
     let url = href || '';
-    // 相対リンク configs/... は GitHub 上の実体に書き換える
-    if (/^(\.\/)?configs\//.test(url)) {
+    // 相対リンク configs/... / bench/... は GitHub 上の実体に書き換える
+    if (/^(\.\/)?(configs|bench)\//.test(url)) {
       url = GITHUB_BLOB_BASE + url.replace(/^\.\//, '');
     }
     const titleAttr = title ? ` title="${escapeHtml(title)}"` : '';
