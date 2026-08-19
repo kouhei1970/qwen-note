@@ -179,7 +179,7 @@ ollama show qwen3.8-coder:27b
 | `generationConfig.contextWindowSize` | `98304` | Modelfile の `num_ctx` と一致させる。5-2 章参照 |
 | `generationConfig.samplingParams` | `{temperature: 0.7, top_p: 0.8, max_tokens: 32768}` | Modelfile と揃える。`max_tokens` は大きなファイル生成が途中で途切れないようにするため |
 | `generationConfig.extra_body.reasoning_effort` | `"none"` | 5-3 章参照。thinking を使う／上げる方法は 5-4 章 |
-| `model.maxSessionTurns` / `maxWallTimeSeconds` / `maxToolCalls` | `200` / `3600` / `500` | 自律実行（`qwen --yolo`）の暴走を止める上限 |
+| `model.maxSessionTurns` / `maxWallTimeSeconds` / `maxToolCalls` | `1000` / `3600` / `500` | 自律実行（`qwen --yolo`）の暴走を止める上限。`maxSessionTurns` は 1 セッション内のモデル往復数（ツール呼び出し 1 バッチ＝1 ターン）で、当初 200 にしていたら 2026-08-19 の長い自律セッションで「The session has reached the maximum number of turns: 200」に達したため 1000 に緩めた。未指定（-1）なら無制限 |
 | `mcpServers` | `playwright`（ローカル Web アプリの画面確認）、`ddg-search`（鍵なし検索。10 章） | MCP は起動時に接続。不要な段階では `--allowed-mcp-server-names "none"` で切る |
 | `general.enableAutoUpdate` | `false` | 更新で挙動が変わるタイミングを自分で決めたいため |
 | `ide.enabled` | `true` | — |
