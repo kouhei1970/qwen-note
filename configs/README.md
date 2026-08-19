@@ -9,9 +9,11 @@ README.md 本文で解説している設定ファイルの実体です。それ�
 | `ollama/com.kouhei.ollama-env.plist` | `~/Library/LaunchAgents/com.kouhei.ollama-env.plist` | `cp ollama/com.kouhei.ollama-env.plist ~/Library/LaunchAgents/ && launchctl load ~/Library/LaunchAgents/com.kouhei.ollama-env.plist` |
 | `qwen/settings.json` | `~/.qwen/settings.json` | `cp qwen/settings.json ~/.qwen/settings.json` |
 | `qwen/QWEN.md` | `~/.qwen/QWEN.md` | `cp qwen/QWEN.md ~/.qwen/QWEN.md` |
+| `qwen/skills/gsi-tiles/SKILL.md` | `~/.qwen/skills/gsi-tiles/SKILL.md` | `mkdir -p ~/.qwen/skills/gsi-tiles && cp qwen/skills/gsi-tiles/SKILL.md ~/.qwen/skills/gsi-tiles/` |
 
 ## 注意
 
 - `ollama/com.kouhei.ollama-env.plist` の中のパス（`/Users/kouhei/...`）は自分のユーザ名に書き換えてください。
 - `qwen/settings.json` は公開用に整理してあります。実物との差分は README.md の「Qwen Code 側の設定」節を参照してください（LAN 上の LM Studio ホストは `LM_STUDIO_HOST` というプレースホルダに置き換え済みです）。使う場合は自分の環境の値に書き換えてください。
+- `qwen/settings.json` の `mcpServers.ddg-search`（`npx -y @oevortex/ddg_search`）は鍵不要の DuckDuckGo 検索 MCP です。初回起動時に npx がパッケージを取得します。
 - `qwen/settings.json` の `env` に入っている API キーはすべてダミー文字列です（Ollama / LM Studio はどちらも認証不要ですが、空文字だと qwen-code に弾かれるため）。

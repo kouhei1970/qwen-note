@@ -15,9 +15,10 @@ Web 版（GitHub Pages）: https://kouhei1970.github.io/qwen-note/
 7. [実測性能とキャッシュの挙動](#7-実測性能とキャッシュの挙動)
 8. [Sonnet との簡易ベンチ](#8-sonnet-との簡易ベンチ)
 9. [運用ノウハウ](#9-運用ノウハウ)
-10. [セットアップ手順（まとめ）](#10-セットアップ手順まとめ)
-11. [リポジトリ構成](#11-リポジトリ構成)
-12. [ライセンス / 免責](#12-ライセンス--免責)
+10. [ローカルモデルに「調べる手段」を与える（幻覚 API 対策）](#10-ローカルモデルに調べる手段を与える幻覚-api-対策)
+11. [セットアップ手順（まとめ）](#11-セットアップ手順まとめ)
+12. [リポジトリ構成](#12-リポジトリ構成)
+13. [ライセンス / 免責](#13-ライセンス--免責)
 
 ## 1. TL;DR
 
@@ -27,6 +28,7 @@ Web 版（GitHub Pages）: https://kouhei1970.github.io/qwen-note/
 - `contextWindowSize` を下げて安全マージンを取ろうとした結果、逆に壊れました。qwen-code 内部の圧縮・出力クランプのロジックと衝突したためです（詳細は 5 章）。
 - thinking を切るパラメータは `extra_body.reasoning_effort: "none"` だけが効きました。`enable_thinking: false` や `think: false` など、他に試した候補はすべて効きませんでした。
 - `num_ctx` の確保サイズは速度に影響しません。効くのは実際に入っている文脈長で、decode は 60K を超えると落ち始め 124K で半減します（7 章で実測）。98304 は「自動圧縮を約 68K で発火させる値」として妥当と評価しました。
+- ニッチな外部 API（国土地理院タイル等）はモデルが URL ごと幻覚し、DNS 失敗を「環境の問題」と解釈して合成フォールバックで迂回します。鍵なし検索 MCP（`@oevortex/ddg_search`）＋「記憶より調査」ルール＋確定仕様の skill の 3 点で対策しました（10 章）。
 - `~/.qwen/QWEN.md`（グローバル指示）に「既存ファイルを `write_file` で丸ごと書き換えない」などの編集鉄則を入れたところ、インデント崩れによる構文破壊がほぼ止まりました。
 
 ## 2. 環境
@@ -163,7 +165,7 @@ ollama show qwen3.8-coder:27b
 
 ## 5. Qwen Code 側の設定
 
-`~/.qwen/settings.json` の要点です（公開用に整理した版を `configs/qwen/settings.json` に置いています。差分は 11 章参照）。
+`~/.qwen/settings.json` の要点です（公開用に整理した版を `configs/qwen/settings.json` に置いています。差分は 12 章参照）。
 
 | 項目 | 値 | 理由 |
 |---|---|---|
@@ -178,6 +180,7 @@ ollama show qwen3.8-coder:27b
 | `generationConfig.samplingParams` | `{temperature: 0.7, top_p: 0.8, max_tokens: 32768}` | Modelfile と揃える。`max_tokens` は大きなファイル生成が途中で途切れないようにするため |
 | `generationConfig.extra_body.reasoning_effort` | `"none"` | 5-3 章参照 |
 | `model.maxSessionTurns` / `maxWallTimeSeconds` / `maxToolCalls` | `200` / `3600` / `500` | 自律実行（`qwen --yolo`）の暴走を止める上限 |
+| `mcpServers` | `playwright`（ローカル Web アプリの画面確認）、`ddg-search`（鍵なし検索。10 章） | MCP は起動時に接続。不要な段階では `--allowed-mcp-server-names "none"` で切る |
 | `general.enableAutoUpdate` | `false` | 更新で挙動が変わるタイミングを自分で決めたいため |
 | `ide.enabled` | `true` | — |
 
@@ -232,7 +235,7 @@ Ollama 0.32.13 の `/v1/chat/completions` で Qwen3 系の thinking を切るパ
 
 導入効果は明確でした。同一タスクで比較したところ、導入前は **5 分 19 秒、6 箇所破損、しかもモデルは成功と虚偽報告**していたのが、導入後は **57 秒、変更 1 行のみ、インデント一致**まで改善しました。
 
-なお、フォーマッタ（ruff / black / prettier / eslint、いずれも Homebrew または `npm -g` で導入済み）は構文が壊れたファイルを直せません。「`write_file` 全文置換禁止」がこの問題への本質的な防御であり、フォーマッタはその後段の仕上げに過ぎない、というのが今回の結論です。QWEN.md にはこの他に、作業の進め方（`todo_write` での手順化）、終了条件（未検証の明記、同じ確認を 3 回以上繰り返さない、無変更ターンが 5 回続いたら停止）、編集後の検証手順（構文チェック → 直す → フォーマッタの順序厳守）、外部 API の同時接続数（6 程度）、報告時の姿勢（前置きなし、未検証・未達を正直に書く）を定めています。全文は `configs/qwen/QWEN.md` にあります。
+なお、フォーマッタ（ruff / black / prettier / eslint、いずれも Homebrew または `npm -g` で導入済み）は構文が壊れたファイルを直せません。「`write_file` 全文置換禁止」がこの問題への本質的な防御であり、フォーマッタはその後段の仕上げに過ぎない、というのが今回の結論です。QWEN.md にはこの他に、作業の進め方（`todo_write` での手順化）、終了条件（未検証の明記、同じ確認を 3 回以上繰り返さない、無変更ターンが 5 回続いたら停止）、編集後の検証手順（構文チェック → 直す → フォーマッタの順序厳守）、外部 API の同時接続数（6 程度）、報告時の姿勢（前置きなし、未検証・未達を正直に書く）を定めています。2026-08-19 に「外部 API・URL・ライブラリ仕様の扱い（記憶より調査を優先）」の節を追加しました（10 章）。全文は `configs/qwen/QWEN.md` にあります。
 
 ## 7. 実測性能とキャッシュの挙動
 
@@ -344,9 +347,90 @@ failed to restore cache, freeing all caches
 - **検証範囲を絞る**: 検証はモデルが実行できるものだけを合格条件にします。node や curl だけで完結する段階では `--allowed-mcp-server-names "none"` で MCP を切り、コンテキストを節約します。
 - **長時間実行**: `nohup qwen --yolo ... &` でバックグラウンド実行します。
 - **プロセス停止**: `pkill -f "qwen-code/cli.js"` を使います（`pkill -f "qwen --yolo"` は取り逃します）。
+- **「A potential loop was detected」が出たら**: qwen-code 本体のループ検知です。0.21.12 の判定は「同一ツール＋同一引数 5 回連続」「出力の同じ 50 文字チャンク 10 回反復」「1 ターンのツール呼び出し上限（`maxToolCalls`）」が常時有効、さらに「**同名ツールを引数不問で 8 回連続**」「直近 15 回中に読み取り系が 8 回以上」「同一（ツール,引数）が累計 6 回」「ABAB の交互 3 往復」が `model.skipLoopDetection: false` のとき有効です。再開直後に PLAN → PROGRESS → ソースと順に読むだけで「同名 8 回連続」に当たる誤検知が起きるので、再開プロンプトでは読むファイルを絞るか `read_many_files` を 1 回で使わせます。出たときはダイアログで keep のまま次の指示を送れば続行できます。
 - **効果**: 一括実装を試みたときは 109 分かけて未完に終わりました。段階分割にしたところ各セッションのコンテキストは 23k〜30k に収まり、`cached=30626` のような完全ヒットも観測しています。
 
-## 10. セットアップ手順（まとめ）
+## 10. ローカルモデルに「調べる手段」を与える（幻覚 API 対策）
+
+### 起きたこと
+
+2026-08-19 に、国土地理院（GSI）の航空写真と標高タイルを使う 3D 地形ビューワを qwen に作らせたところ、83 分のセッション（自動圧縮 4 回）の末に「写真が出ない・どこでも同じ地形」で止まりました。原因を追うと、**GSI の API を丸ごと幻覚**していました。
+
+```
+https://gsi-cer.ad.jp/ortho3/v1/getTile?z=..   ← 存在しないホストとパス
+https://gsi-cer.ad.jp/srtm/v1/tile/...
+```
+
+実物は `https://cyberjapandata.gsi.go.jp/xyz/{seamlessphoto|dem5a_png|...}/{z}/{x}/{y}.{jpg|png}` です。DNS が引けないので合成地形のフォールバックに落ち、それが「どこでも同じ地形」として見えていました。PROGRESS.md には「コードは正しい URL 形式で実装済み。接続できる環境なら取れるはず」と書かれていて、**モデルは確信して間違えている**状態でした。
+
+セッションのログを追うと、失敗の型がはっきり見えます。
+
+1. 最初の疎通テストが自分の幻覚 URL → `Could not resolve host`
+2. google / github / `www.gsi.go.jp` は解決することを確認（ここまでは良い）
+3. 公式ドキュメントを読もうとするが、その URL も幻覚（`www.gsi.go.jp/api-dem.html`）→ 空振り
+4. `web_fetch` への依頼文が「**gsi-cer.ad.jp で配信されている** API の形式を抽出せよ」と、前提を埋め込んだ確認質問になっている
+5. 7 分後に「現行 API は gsi-cer.ad.jp、この環境では DNS 非到達」を PLAN.md に事実として記録
+6. 以後の自動圧縮 4 回でこの記述が毎回要約に載り、前提を再検討する機会が消える
+7. 合成フォールバックで「動いているように見える」ため失敗が見えず、残り時間は合成地形を地図らしくする作業へ
+
+### なぜ毎回起きるのか
+
+モデルに直接聞いてみると、知識そのものが不安定でした（`qwen3.8-coder:27b`、temperature 0 でも）。
+
+| 質問 | 返ってきた URL |
+|---|---|
+| 日本語で「地理院タイルの航空写真と標高タイルの URL は？」 | `https://cyberjapan.ndc.go.jp/airphoto/{year}/...`（存在しないホスト） |
+| 英語で同じ質問 | `https://cyberjapandata.gsi.go.jp/xyz/photo2018/...`（ホストは正しい、レイヤ名は架空）＋「GSI は標高を PNG タイルで配信していない」（誤り） |
+| 「gsi-cer.ad.jp は地理院のタイル配信に使われているか？」 | 「使われていない。存在しないか無関係」 |
+
+つまり XYZ タイルという「形」はうっすら覚えているが、ホスト名・レイヤ名・標高 PNG のデコード式といった細部は保持できておらず、**聞くたびに別のもっともらしい答えを生成**します。27B・nvfp4 のモデルにとって、日本の官公庁 API の細部は学習データ中でごく薄く、こうした「ニッチだが正確さが要る事実」が最も弱い領域です。GSI に限らず、同じ性質の API（自治体・学術系・日本語ドキュメントしかないもの）で同じことが起きます。
+
+そして進め方が「**思い込みを確認する**」方向に倒れます。qwen-code の `web_search` は未設定（0.21.12 では DashScope の検索付きモデルを検索用サイドチャネルにする方式で、クラウドの API キーが要る）、`web_fetch` は「URL を既に知っている」ことが前提なので、知らない URL は幻覚するしかない。DNS 失敗という証拠を得ても「自分の URL が違う」ではなく「環境が届かない」と解釈する。QWEN.md の「同じ確認を 3 回以上繰り返さない・未検証と書いて進む」は、この場面では**間違った前提のまま迂回する**方向に働きました。
+
+### 対策は 3 点セット
+
+**1. 調べる手段を与える — 鍵なしの検索 MCP**
+
+`@oevortex/ddg_search`（DuckDuckGo 経由、API キー不要）を MCP サーバとして追加します。実際に「地理院タイル 一覧 標高タイル」で検索すると、1 位が `https://maps.gsi.go.jp/development/ichiran.html`（地理院タイル一覧）、2 位が標高タイルの詳細仕様ページで、qwen が 7 分かけて辿り着けなかった公式ページに 1 発で届きます。
+
+```json
+"mcpServers": {
+  "ddg-search": {
+    "command": "npx",
+    "args": ["-y", "@oevortex/ddg_search"],
+    "timeout": 60000,
+    "trust": false
+  }
+}
+```
+
+注意: DuckDuckGo はスクレイピングなので不安定です（別パッケージ `duckduckgo-mcp-server` は初回から「anomaly detected」で弾かれました）。安定させたいなら無料枠のある API 系（`tavily-mcp`: 月 1,000 回、Brave Search MCP: 月 2,000 回）が確実です。
+
+**2. 記憶より調査を優先するルール — `QWEN.md` に追加**
+
+```
+- 外部サービスの URL・エンドポイント・レイヤ名・データ形式は記憶から書かない。
+  まず web-search で「<サービス名> 公式 ドキュメント <機能名>」のように中立な語で検索し、
+  公式ページを web_fetch で読んでから使う。検索語に自分が推測したホスト名を入れない。
+- 該当領域の skill（~/.qwen/skills/）があればそれを最優先し、検索より先に読む。
+- 使った仕様は出典 URL と該当箇所を PLAN.md に引用として残す。
+- 自分が選んだホストだけ DNS 解決や 404 になり、他のサイトは届く場合は、
+  「環境の問題」ではなく「自分の URL が誤り」と判断してドキュメントに戻る。
+- ドキュメントが見つからないときは、合成データやフォールバック実装で先に進まず、
+  「仕様未確認」と報告して止まる。
+```
+
+**3. 調べた結果を次回に残す — Qwen Code の skills**
+
+`~/.qwen/skills/<name>/SKILL.md`（frontmatter に `name` / `description`）に置いた知識は、説明文に合致するタスクのときにモデルへ読み込まれます。繰り返し扱う領域は、検索させるより**確定仕様を skill に固定**する方が 27B モデルには確実です。今回は `gsi-tiles` skill を作り、URL 形式・レイヤ名とズーム上限・標高 PNG のデコード式・検証用の既知値（影森グラウンド 260.2 m など）・公式ドキュメント URL をまとめました（[configs/qwen/skills/gsi-tiles/SKILL.md](configs/qwen/skills/gsi-tiles/SKILL.md)）。冒頭に「記憶にある別のホスト名はすべて誤り」と明記してあります。
+
+### 期待値の置き方
+
+- 「公式ドキュメントの URL を見つける」段階は、上の実験のとおりこのモデルでも十分できます。
+- 「長い仕様ページから正確な形式を抜き出す」段階は、`web_fetch` の要約を 27B が行うため取りこぼしが残ります。繰り返す領域は skill に固定し、初見の領域だけ検索させる、という組み合わせが現実的です。
+- 合格条件に**実データの値**（「中心標高が 258〜262 m」）を入れると、合成データでは絶対に通らないので、誤った前提のまま先に進めなくなります。
+
+## 11. セットアップ手順（まとめ）
 
 1. Ollama.app をインストールします（0.32.12 以上、MLX ランナー対応）。ベースモデルを取得します。
    ```sh
@@ -379,7 +463,7 @@ failed to restore cache, freeing all caches
    ```
    `usage.completion_tokens` が一桁〜十数トークンなら、thinking オフが効いています。
 
-## 11. リポジトリ構成
+## 12. リポジトリ構成
 
 ```
 configs/
@@ -390,14 +474,15 @@ configs/
 │   └── com.kouhei.ollama-env.plist    上記スクリプトを起動する LaunchAgent
 └── qwen/
     ├── settings.json                  Qwen Code 設定の公開版（5 章）
-    └── QWEN.md                        モデルへのグローバル指示（6 章）
+    ├── QWEN.md                        モデルへのグローバル指示（6 章・10 章）
+    └── skills/gsi-tiles/SKILL.md      地理院タイルの確定仕様 skill（10 章）
 ```
 
 `bench/` には 7 章のマイクロベンチのスクリプト（`bench_ctx.py`）と生データ（`bench_ctx_results.jsonl`）を置いています。
 
 そのほか `site/`（テンプレート・CSS・SNS カード画像）、`scripts/build-site.mjs`、`.github/workflows/pages.yml` は GitHub Pages 用のビルド一式です。この README.md を単一ソースとして HTML 化し、`main` への push で自動デプロイしています。
 
-各ファイルへのリンク: [configs/README.md](configs/README.md) / [Modelfile.qwen3.8-coder](configs/ollama/Modelfile.qwen3.8-coder) / [ollama-tuned-env.sh](configs/ollama/ollama-tuned-env.sh) / [com.kouhei.ollama-env.plist](configs/ollama/com.kouhei.ollama-env.plist) / [settings.json](configs/qwen/settings.json) / [QWEN.md](configs/qwen/QWEN.md)
+各ファイルへのリンク: [configs/README.md](configs/README.md) / [Modelfile.qwen3.8-coder](configs/ollama/Modelfile.qwen3.8-coder) / [ollama-tuned-env.sh](configs/ollama/ollama-tuned-env.sh) / [com.kouhei.ollama-env.plist](configs/ollama/com.kouhei.ollama-env.plist) / [settings.json](configs/qwen/settings.json) / [QWEN.md](configs/qwen/QWEN.md) / [gsi-tiles SKILL.md](configs/qwen/skills/gsi-tiles/SKILL.md)
 
 `configs/qwen/settings.json` は実物 `~/.qwen/settings.json` を元にした公開版で、以下の点を整理しています。
 
@@ -408,7 +493,7 @@ configs/
 
 JSON としての妥当性は `python3 -m json.tool` で検証済みです。
 
-## 12. ライセンス / 免責
+## 13. ライセンス / 免責
 
 - `configs/` 以下の設定ファイル・スクリプトは MIT ライセンスです（`LICENSE` 参照）。
 - 本文（README.md および GitHub Pages 版の記事）は CC BY 4.0 とします。

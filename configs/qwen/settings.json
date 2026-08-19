@@ -13,9 +13,9 @@
   },
   "env": {
     "QWEN_CUSTOM_API_KEY_OPENAI_HTTP_127_0_0_1_11434_V1_A5A03F67A771": "ollama",
-    "QWEN_CUSTOM_API_KEY_LM_STUDIO": "lm",
     "QWEN_STREAM_IDLE_TIMEOUT_MS": "900000",
-    "QWEN_STREAM_MAX_LIFETIME_MS": "3600000"
+    "QWEN_STREAM_MAX_LIFETIME_MS": "3600000",
+    "QWEN_CUSTOM_API_KEY_LM_STUDIO": "lm"
   },
   "context": {
     "autoCompactThreshold": 0.75
@@ -37,6 +37,16 @@
       ],
       "timeout": 120000,
       "trust": false
+    },
+    "ddg-search": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@oevortex/ddg_search"
+      ],
+      "timeout": 60000,
+      "trust": false,
+      "description": "DuckDuckGo 検索（鍵不要）。外部 API/URL/仕様は記憶で書かず、まずこれで公式ドキュメントを探す"
     }
   },
   "modelProviders": {
