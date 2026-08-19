@@ -44,7 +44,7 @@ Web 版（GitHub Pages）: https://kouhei1970.github.io/qwen-note/
 
 | モデル | ID | サイズ | 備考 |
 |---|---|---|---|
-| `qwen3.8-coder:27b` | `a4fd993c80f2` | 18 GB | 自作カスタム（本記事のメイン。詳細は 4-2 章）。ロード時 32 GB, 100% GPU, CONTEXT 98304 |
+| `qwen3.8-coder:27b` | `a4fd993c80f2` | 18 GB | 自作カスタム（公式には存在しないローカル限定タグ。2026-08-17 に Claude Code へ Ollama/qwen-code のチューニングを依頼した際に `ollama create` で作成。本記事のメイン、詳細は 4-2 章）。ロード時 32 GB, 100% GPU, CONTEXT 98304 |
 | `qwen3.8:27b-mlx` | `5642e97495e1` | 18 GB | 公式（ollama.com）ベース。architecture `qwen3_5`, 27.8B, context length 262144, quantization nvfp4, capabilities: completion / vision / tools / thinking |
 | `qwen3.6:35b-mlx` | `1b50c6fdc2d4` | 21 GB | 比較用。architecture `qwen3_5_moe`, 35.1B MoE, quantization nvfp4 |
 
@@ -125,7 +125,7 @@ OLLAMA_KEEP_ALIVE:8h0m0s OLLAMA_MAX_LOADED_MODELS:1 OLLAMA_NUM_PARALLEL:1 OLLAMA
 
 ### 4-2. カスタムモデル Modelfile
 
-`qwen3.8:27b-mlx` をベースに、次の Modelfile でカスタムモデル `qwen3.8-coder:27b` を作っています。
+`qwen3.8:27b-mlx` をベースに、次の Modelfile でカスタムモデル `qwen3.8-coder:27b` を作っています（ollama.com にはない名前です。2026-08-17 に「qwen-code がうまく動かないのでチューニングしてほしい」と Claude Code に頼んだ作業の中で、`/v1` からは `num_ctx` を渡せないと分かったために作られました。レイヤは公式モデルと共有なのでディスクはほぼ増えません）。
 
 ```
 FROM qwen3.8:27b-mlx
