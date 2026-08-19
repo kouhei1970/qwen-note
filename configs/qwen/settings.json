@@ -133,7 +133,7 @@
   "model": {
     "name": "qwen3.8-coder:27b",
     "baseUrl": "http://127.0.0.1:11434/v1",
-    "skipLoopDetection": false,
+    "skipLoopDetection": true,
     "maxSessionTurns": 1000,
     "maxWallTimeSeconds": 3600,
     "maxToolCalls": 500

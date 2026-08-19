@@ -179,6 +179,7 @@ ollama show qwen3.8-coder:27b
 | `generationConfig.contextWindowSize` | `98304` | Modelfile の `num_ctx` と一致させる。5-2 章参照 |
 | `generationConfig.samplingParams` | `{temperature: 0.7, top_p: 0.8, max_tokens: 32768}` | Modelfile と揃える。`max_tokens` は大きなファイル生成が途中で途切れないようにするため |
 | `generationConfig.extra_body.reasoning_effort` | `"none"` | 5-3 章参照。thinking を使う／上げる方法は 5-4 章 |
+| `model.skipLoopDetection` | `true` | 9 章参照。発見的ループ判定（同名 8 連続・同一累計 6 等）が正しい作業パターンを誤検知して頻繁に止まるため無効化。常時有効の判定（同一引数 5 連続・文章反復・ターン内 `maxToolCalls`）は残る |
 | `model.maxSessionTurns` / `maxWallTimeSeconds` / `maxToolCalls` | `1000` / `3600` / `500` | 自律実行（`qwen --yolo`）の暴走を止める上限。`maxSessionTurns` は 1 セッション内のモデル往復数（ツール呼び出し 1 バッチ＝1 ターン）で、当初 200 にしていたら 2026-08-19 の長い自律セッションで「The session has reached the maximum number of turns: 200」に達したため 1000 に緩めた。未指定（-1）なら無制限 |
 | `mcpServers` | `playwright`（ローカル Web アプリの画面確認）、`ddg-search`（鍵なし検索。10 章） | MCP は起動時に接続。不要な段階では `--allowed-mcp-server-names "none"` で切る |
 | `general.enableAutoUpdate` | `false` | 更新で挙動が変わるタイミングを自分で決めたいため |
@@ -376,7 +377,7 @@ failed to restore cache, freeing all caches
 - **検証範囲を絞る**: 検証はモデルが実行できるものだけを合格条件にします。node や curl だけで完結する段階では `--allowed-mcp-server-names "none"` で MCP を切り、コンテキストを節約します。
 - **長時間実行**: `nohup qwen --yolo ... &` でバックグラウンド実行します。
 - **プロセス停止**: `pkill -f "qwen-code/cli.js"` を使います（`pkill -f "qwen --yolo"` は取り逃します）。
-- **「A potential loop was detected」が出たら**: qwen-code 本体のループ検知です。0.21.12 の判定は「同一ツール＋同一引数 5 回連続」「出力の同じ 50 文字チャンク 10 回反復」「1 ターンのツール呼び出し上限（`maxToolCalls`）」が常時有効、さらに「**同名ツールを引数不問で 8 回連続**」「直近 15 回中に読み取り系が 8 回以上」「同一（ツール,引数）が累計 6 回」「ABAB の交互 3 往復」が `model.skipLoopDetection: false` のとき有効です。再開直後に PLAN → PROGRESS → ソースと順に読むだけで「同名 8 回連続」に当たる誤検知が起きるので、再開プロンプトでは読むファイルを絞るか `read_many_files` を 1 回で使わせます。出たときはダイアログで keep のまま次の指示を送れば続行できます。
+- **「A potential loop was detected」が頻発するなら `model.skipLoopDetection: true`**: qwen-code 本体のループ検知です。0.21.12 の判定は「同一ツール＋同一引数 5 回連続」「出力の同じ 50 文字チャンク 10 回反復」「1 ターンのツール呼び出し上限（`maxToolCalls`）」が常時有効、さらに「**同名ツールを引数不問で 8 回連続**」「直近 15 回中に読み取り系が 8 回以上」「同一（ツール,引数）が累計 6 回」「ABAB の交互 3 往復」が `model.skipLoopDetection: false` のとき有効です。2026-08-19 の 3 セッション（計 380 回のツール呼び出し）で止まった原因を調べると、すべて後者の発見的判定で、中身は `read_file` 12〜16 連続（ファイル確認）、`run_shell_command` 8 連続（ビルド→テスト）、同じ URL への `browser_navigate` 8 回（編集のたびの画面確認）でした。つまり QWEN.md で推奨している作業パターンそのものが誤検知され、10 分おきに「つづけて」を打つはめになります。常時有効の 3 判定だけで本物のループは止まるので、`model.skipLoopDetection: true` にしました。再開プロンプトで読むファイルを絞る・`read_many_files` を 1 回で使う、も併用すると無駄な呼び出し自体が減ります。
 - **効果**: 一括実装を試みたときは 109 分かけて未完に終わりました。段階分割にしたところ各セッションのコンテキストは 23k〜30k に収まり、`cached=30626` のような完全ヒットも観測しています。
 
 ## 10. ローカルモデルに「調べる手段」を与える（幻覚 API 対策）
