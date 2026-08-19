@@ -1,0 +1,41 @@
+# qwen3.8-coder:27b — Ollama(MLX) 用カスタムモデル定義
+#
+# 用途: qwen3.8:27b-mlx（公式ベース）から、コーディングエージェント用に
+#       コンテキスト長とサンプリングパラメータを固定したカスタムモデルを作る。
+#
+# 作成コマンド:
+#   ollama create qwen3.8-coder:27b -f Modelfile.qwen3.8-coder
+#
+# 確認コマンド:
+#   ollama show qwen3.8-coder:27b
+#   → Parameters に num_ctx 98304 が出ていることを確認する
+#
+# ベース (qwen3.8:27b-mlx) からの変更点:
+#   num_ctx 98304 (新規) / temperature 1→0.7 / top_p 0.95→0.8 / repeat_penalty 1→1.05
+#
+# 理由:
+#   (a) OpenAI 互換 /v1 経由では Ollama の options（num_ctx）をリクエストに
+#       乗せられないため、コンテキスト長は Modelfile でしか固定できない。
+#   (b) Ollama.app は OLLAMA_CONTEXT_LENGTH を VRAM から自動算出した値
+#       （このマシンでは 262144）で上書きし、launchctl setenv での指定は
+#       効かない。Modelfile の num_ctx はそれより優先される。
+#   (c) 262144 のままロードすると KV キャッシュ確保が巨大になるため、
+#       実用上限として 98304 に固定した。
+#   (d) temperature 0.7 / top_p 0.8 / top_k 20 / min_p 0 は Qwen3 系で
+#       公式に推奨されている non-thinking 用サンプリング値。thinking を
+#       切ってコーディングに使うためこちらを採用した。
+#   (e) repeat_penalty 1.05 は軽い反復抑止。強くしすぎるとコードが壊れる
+#       ため 1.05 に留めた。
+#
+# 注意: qwen-code は samplingParams（temperature/top_p）をリクエストに
+#       載せて上書きする。settings.json 側と同じ値に揃えてあるが、
+#       num_ctx だけは Modelfile が唯一の指定手段。
+
+FROM qwen3.8:27b-mlx
+PARAMETER num_ctx 98304
+PARAMETER temperature 0.7
+PARAMETER top_p 0.8
+PARAMETER top_k 20
+PARAMETER min_p 0
+PARAMETER repeat_penalty 1.05
+PARAMETER presence_penalty 0

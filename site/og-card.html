@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>og-card</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 1200px;
+    height: 630px;
+    overflow: hidden;
+  }
+
+  .card {
+    width: 1200px;
+    height: 630px;
+    box-sizing: border-box;
+    position: relative;
+    background:
+      radial-gradient(1100px 620px at 88% -10%, rgba(52, 211, 153, 0.16), transparent 60%),
+      linear-gradient(135deg, #0a1022 0%, #121a3a 48%, #1c1450 100%);
+    color: #ffffff;
+    font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+    padding: 60px 72px 46px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .eyebrow {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #6ee7b7;
+  }
+
+  .title {
+    margin: 22px 0 0;
+    font-size: 54px;
+    line-height: 1.32;
+    font-weight: 800;
+    max-width: 1020px;
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    margin: 22px 0 0;
+    font-size: 25px;
+    line-height: 1.5;
+    font-weight: 500;
+    color: #cbd3f5;
+    max-width: 980px;
+  }
+
+  .bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .chip {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 18px;
+    font-weight: 500;
+    color: #eafff5;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(110, 231, 183, 0.4);
+    border-radius: 999px;
+    padding: 9px 18px;
+    white-space: nowrap;
+  }
+
+  .footer-row {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .domain {
+    margin: 0;
+    font-size: 19px;
+    color: rgba(255, 255, 255, 0.55);
+    letter-spacing: 0.01em;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="top">
+      <p class="eyebrow">kouhei1970 / qwen-note</p>
+      <h1 class="title">ローカル Qwen3.8 27B で<br>コーディングエージェント</h1>
+      <p class="subtitle">Ollama (MLX) + Qwen Code — 私のおすすめ設定と実測メモ</p>
+    </div>
+    <div class="bottom">
+      <div class="chips">
+        <span class="chip">Mac Studio M3 Ultra 512GB</span>
+        <span class="chip">num_ctx 98304</span>
+        <span class="chip">OLLAMA_KEEP_ALIVE 8h</span>
+        <span class="chip">reasoning_effort: none</span>
+        <span class="chip">prefill ~400 tok/s · decode ~60 tok/s</span>
+      </div>
+      <div class="footer-row">
+        <p class="domain">kouhei1970.github.io/qwen-note</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

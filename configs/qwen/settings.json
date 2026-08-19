@@ -1,0 +1,131 @@
+{
+  "general": {
+    "enableAutoUpdate": false
+  },
+  "security": {
+    "auth": {
+      "selectedType": "openai"
+    }
+  },
+  "$version": 4,
+  "ide": {
+    "enabled": true
+  },
+  "env": {
+    "QWEN_CUSTOM_API_KEY_OPENAI_HTTP_127_0_0_1_11434_V1_A5A03F67A771": "ollama",
+    "QWEN_CUSTOM_API_KEY_LM_STUDIO": "lm",
+    "QWEN_STREAM_IDLE_TIMEOUT_MS": "900000",
+    "QWEN_STREAM_MAX_LIFETIME_MS": "3600000"
+  },
+  "context": {
+    "autoCompactThreshold": 0.75
+  },
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest",
+        "--headless",
+        "--isolated",
+        "--browser",
+        "chrome",
+        "--viewport-size",
+        "1600,1000",
+        "--allowed-origins",
+        "http://localhost:*;http://127.0.0.1:*"
+      ],
+      "timeout": 120000,
+      "trust": false
+    }
+  },
+  "modelProviders": {
+    "openai": [
+      {
+        "id": "qwen3.8-coder:27b",
+        "name": "qwen3.8-coder:27b (ollama MLX / tuned, no-think)",
+        "baseUrl": "http://127.0.0.1:11434/v1",
+        "envKey": "QWEN_CUSTOM_API_KEY_OPENAI_HTTP_127_0_0_1_11434_V1_A5A03F67A771",
+        "generationConfig": {
+          "timeout": 1800000,
+          "maxRetries": 1,
+          "contextWindowSize": 98304,
+          "samplingParams": {
+            "temperature": 0.7,
+            "top_p": 0.8,
+            "max_tokens": 32768
+          },
+          "extra_body": {
+            "reasoning_effort": "none"
+          },
+          "modalities": {
+            "image": true,
+            "pdf": true
+          }
+        }
+      },
+      {
+        "id": "qwen3.8:27b-mlx",
+        "name": "qwen3.8:27b-mlx (thinking)",
+        "baseUrl": "http://127.0.0.1:11434/v1",
+        "envKey": "QWEN_CUSTOM_API_KEY_OPENAI_HTTP_127_0_0_1_11434_V1_A5A03F67A771",
+        "generationConfig": {
+          "timeout": 1800000,
+          "maxRetries": 1,
+          "contextWindowSize": 98304,
+          "samplingParams": {
+            "temperature": 0.7,
+            "top_p": 0.8,
+            "max_tokens": 32768
+          },
+          "modalities": {
+            "image": true,
+            "pdf": true
+          }
+        }
+      },
+      {
+        "id": "qwen3.6:35b-mlx",
+        "name": "qwen3.6:35b-mlx",
+        "baseUrl": "http://127.0.0.1:11434/v1",
+        "envKey": "QWEN_CUSTOM_API_KEY_OPENAI_HTTP_127_0_0_1_11434_V1_A5A03F67A771",
+        "generationConfig": {
+          "timeout": 1800000,
+          "maxRetries": 1,
+          "contextWindowSize": 98304,
+          "modalities": {
+            "image": true,
+            "pdf": true
+          }
+        }
+      },
+      {
+        "id": "qwen/qwen3.8-27b",
+        "name": "qwen/qwen3.8-27b (LM Studio @LM_STUDIO_HOST)",
+        "baseUrl": "http://LM_STUDIO_HOST:1234/v1",
+        "envKey": "QWEN_CUSTOM_API_KEY_LM_STUDIO",
+        "generationConfig": {
+          "timeout": 1800000,
+          "maxRetries": 1,
+          "contextWindowSize": 65536,
+          "extra_body": {
+            "enable_thinking": true
+          },
+          "modalities": {
+            "image": true,
+            "video": true,
+            "pdf": true
+          }
+        }
+      }
+    ]
+  },
+  "model": {
+    "name": "qwen3.8-coder:27b",
+    "baseUrl": "http://127.0.0.1:11434/v1",
+    "skipLoopDetection": false,
+    "maxSessionTurns": 200,
+    "maxWallTimeSeconds": 3600,
+    "maxToolCalls": 500
+  }
+}

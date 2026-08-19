@@ -1,0 +1,18 @@
+{
+  "name": "qwen-note",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "README.md を単一ソースにした 1 ページ記事サイトのビルドスクリプト",
+  "scripts": {
+    "build": "node scripts/build-site.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "highlight.js": "^11.10.0",
+    "marked": "^15.0.7",
+    "marked-highlight": "^2.2.1"
+  }
+}

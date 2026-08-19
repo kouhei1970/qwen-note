@@ -1,0 +1,521 @@
+/* qwen-note — 記事ページ用スタイル（外部リソース不使用・完全セルフコンテインド） */
+
+:root {
+  color-scheme: light;
+
+  --bg: #f7f7f5;
+  --bg-elevated: #ffffff;
+  --bg-hero-from: #12213f;
+  --bg-hero-to: #1c1440;
+  --bg-hero-text: #f4f6ff;
+  --bg-hero-text-muted: #c7cff0;
+  --text: #1c1f26;
+  --text-muted: #5c6270;
+  --border: #e3e2dd;
+  --border-strong: #d0cfc8;
+  --link: #1155cc;
+  --link-hover: #0d3d99;
+  --accent: #0f9d6b;
+  --accent-contrast: #ffffff;
+  --code-bg: #f4f2ed;
+  --code-bg-block: #f6f8fa;
+  --code-text: #34363d;
+  --shadow: 0 1px 2px rgba(20, 20, 20, 0.06), 0 6px 20px rgba(20, 20, 20, 0.06);
+
+  --hljs-comment: #6a737d;
+  --hljs-keyword: #d73a49;
+  --hljs-string: #032f62;
+  --hljs-number: #005cc5;
+  --hljs-title: #6f42c1;
+  --hljs-attr: #005cc5;
+  --hljs-built-in: #005cc5;
+  --hljs-tag: #22863a;
+  --hljs-variable: #e36209;
+  --hljs-deletion-bg: #ffeef0;
+  --hljs-deletion: #b31d28;
+  --hljs-addition-bg: #f0fff4;
+  --hljs-addition: #22863a;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN",
+    "Noto Sans JP", "Yu Gothic", Meiryo, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Noto Sans Mono JP", monospace;
+
+  --content-max: 52rem;
+  --page-max: 78rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --bg: #14161a;
+    --bg-elevated: #1b1e24;
+    --bg-hero-from: #0b1220;
+    --bg-hero-to: #1a1330;
+    --bg-hero-text: #f4f6ff;
+    --bg-hero-text-muted: #aab3d6;
+    --text: #e6e7ea;
+    --text-muted: #a2a7b3;
+    --border: #2b2e35;
+    --border-strong: #383c45;
+    --link: #7aa8ff;
+    --link-hover: #a9c6ff;
+    --accent: #29c98a;
+    --accent-contrast: #08251a;
+    --code-bg: #20232a;
+    --code-bg-block: #1a1d23;
+    --code-text: #d6d9e0;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 20px rgba(0, 0, 0, 0.35);
+
+    --hljs-comment: #8b949e;
+    --hljs-keyword: #ff7b72;
+    --hljs-string: #a5d6ff;
+    --hljs-number: #79c0ff;
+    --hljs-title: #d2a8ff;
+    --hljs-attr: #79c0ff;
+    --hljs-built-in: #ffa657;
+    --hljs-tag: #7ee787;
+    --hljs-variable: #ffa657;
+    --hljs-deletion-bg: #490202;
+    --hljs-deletion: #ffdcd7;
+    --hljs-addition-bg: #04260f;
+    --hljs-addition: #aff5b4;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #14161a;
+  --bg-elevated: #1b1e24;
+  --bg-hero-from: #0b1220;
+  --bg-hero-to: #1a1330;
+  --bg-hero-text: #f4f6ff;
+  --bg-hero-text-muted: #aab3d6;
+  --text: #e6e7ea;
+  --text-muted: #a2a7b3;
+  --border: #2b2e35;
+  --border-strong: #383c45;
+  --link: #7aa8ff;
+  --link-hover: #a9c6ff;
+  --accent: #29c98a;
+  --accent-contrast: #08251a;
+  --code-bg: #20232a;
+  --code-bg-block: #1a1d23;
+  --code-text: #d6d9e0;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 20px rgba(0, 0, 0, 0.35);
+
+  --hljs-comment: #8b949e;
+  --hljs-keyword: #ff7b72;
+  --hljs-string: #a5d6ff;
+  --hljs-number: #79c0ff;
+  --hljs-title: #d2a8ff;
+  --hljs-attr: #79c0ff;
+  --hljs-built-in: #ffa657;
+  --hljs-tag: #7ee787;
+  --hljs-variable: #ffa657;
+  --hljs-deletion-bg: #490202;
+  --hljs-deletion: #ffdcd7;
+  --hljs-addition-bg: #04260f;
+  --hljs-addition: #aff5b4;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.8;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--link);
+  text-decoration-thickness: from-font;
+}
+a:hover {
+  color: var(--link-hover);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ---------- ヒーロー ---------- */
+
+.hero {
+  background: linear-gradient(135deg, var(--bg-hero-from), var(--bg-hero-to));
+  color: var(--bg-hero-text);
+  padding: 3.5rem 1.5rem 3rem;
+}
+
+.hero-inner {
+  max-width: var(--page-max);
+  margin: 0 auto;
+}
+
+.hero-eyebrow {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--bg-hero-text-muted);
+  margin: 0 0 0.75rem;
+}
+
+.hero-title {
+  margin: 0 0 0.9rem;
+  font-size: clamp(1.7rem, 1.2rem + 2vw, 2.6rem);
+  line-height: 1.35;
+  font-weight: 800;
+  max-width: 44rem;
+}
+
+.hero-desc {
+  margin: 0 0 1.6rem;
+  font-size: 1.05rem;
+  color: var(--bg-hero-text-muted);
+  max-width: 40rem;
+}
+
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+.btn-github {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0.6rem 1.1rem;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  box-shadow: var(--shadow);
+}
+.btn-github:hover {
+  filter: brightness(1.06);
+  color: var(--accent-contrast);
+}
+
+.hero-updated {
+  font-size: 0.9rem;
+  color: var(--bg-hero-text-muted);
+}
+
+/* ---------- レイアウト ---------- */
+
+.layout {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+  gap: 2.5rem;
+  align-items: start;
+}
+
+@media (max-width: 860px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- 目次 ---------- */
+
+.toc {
+  position: sticky;
+  top: 1.5rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 1.1rem 1.2rem;
+}
+
+@media (max-width: 860px) {
+  .toc {
+    position: static;
+    order: -1;
+  }
+}
+
+.toc-heading {
+  margin: 0 0 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.toc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  font-size: 0.92rem;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.toc-list a {
+  text-decoration: none;
+  color: var(--text-muted);
+  display: block;
+}
+.toc-list a:hover {
+  color: var(--link);
+}
+
+.toc-empty {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* ---------- 本文 ---------- */
+
+.content {
+  max-width: var(--content-max);
+  min-width: 0;
+}
+
+.content h1,
+.content h2,
+.content h3,
+.content h4,
+.content h5,
+.content h6 {
+  scroll-margin-top: 1.5rem;
+  line-height: 1.45;
+  font-weight: 700;
+}
+
+.content h1 {
+  font-size: 1.9rem;
+  margin: 0 0 1.2rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.content h2 {
+  font-size: 1.45rem;
+  margin: 2.4rem 0 1rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.content h3 {
+  font-size: 1.18rem;
+  margin: 1.8rem 0 0.8rem;
+}
+
+.content h4 {
+  font-size: 1.02rem;
+  margin: 1.5rem 0 0.6rem;
+}
+
+.content p {
+  margin: 0 0 1.1rem;
+}
+
+.content ul,
+.content ol {
+  margin: 0 0 1.1rem;
+  padding-left: 1.4rem;
+}
+
+.content li {
+  margin: 0.3rem 0;
+}
+
+.content li > ul,
+.content li > ol {
+  margin-top: 0.3rem;
+  margin-bottom: 0.3rem;
+}
+
+.content blockquote {
+  margin: 0 0 1.1rem;
+  padding: 0.5rem 1rem;
+  border-left: 3px solid var(--accent);
+  color: var(--text-muted);
+  background: var(--bg-elevated);
+  border-radius: 0 0.4rem 0.4rem 0;
+}
+
+.content hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2.4rem 0;
+}
+
+.content strong {
+  font-weight: 700;
+}
+
+.content code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: var(--code-bg);
+  color: var(--code-text);
+  padding: 0.15em 0.4em;
+  border-radius: 0.35em;
+}
+
+.content pre {
+  margin: 0 0 1.3rem;
+  padding: 1rem 1.1rem;
+  overflow-x: auto;
+  background: var(--code-bg-block);
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  font-size: 0.85rem;
+  line-height: 1.65;
+}
+
+.content pre code {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  font-size: 1em;
+}
+
+.content table {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 0 0 1.3rem;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.content th,
+.content td {
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.8rem;
+  text-align: left;
+}
+
+.content th {
+  background: var(--bg-elevated);
+  font-weight: 700;
+}
+
+.content tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--bg-elevated) 60%, transparent);
+}
+
+.content a {
+  text-underline-offset: 0.15em;
+}
+
+.content img {
+  border-radius: 0.5rem;
+  margin: 0.5rem 0 1.3rem;
+}
+
+/* ---------- highlight.js（GitHub 風テーマ、light/dark は CSS 変数で切替） ---------- */
+
+.hljs {
+  color: var(--code-text);
+  background: transparent;
+}
+.hljs-comment,
+.hljs-quote {
+  color: var(--hljs-comment);
+  font-style: italic;
+}
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-subst,
+.hljs-doctag {
+  color: var(--hljs-keyword);
+}
+.hljs-string,
+.hljs-regexp,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-link {
+  color: var(--hljs-string);
+}
+.hljs-number,
+.hljs-literal {
+  color: var(--hljs-number);
+}
+.hljs-title,
+.hljs-title.function_,
+.hljs-section {
+  color: var(--hljs-title);
+}
+.hljs-attr,
+.hljs-attribute,
+.hljs-meta {
+  color: var(--hljs-attr);
+}
+.hljs-built_in,
+.hljs-type,
+.hljs-class .hljs-title {
+  color: var(--hljs-built-in);
+}
+.hljs-name,
+.hljs-tag,
+.hljs-selector-id,
+.hljs-selector-class {
+  color: var(--hljs-tag);
+}
+.hljs-variable,
+.hljs-template-variable,
+.hljs-params {
+  color: var(--hljs-variable);
+}
+.hljs-deletion {
+  background: var(--hljs-deletion-bg);
+  color: var(--hljs-deletion);
+}
+.hljs-addition {
+  background: var(--hljs-addition-bg);
+  color: var(--hljs-addition);
+}
+.hljs-emphasis {
+  font-style: italic;
+}
+.hljs-strong {
+  font-weight: 700;
+}
+
+/* ---------- フッター ---------- */
+
+.site-footer {
+  border-top: 1px solid var(--border);
+  padding: 1.6rem 1.5rem 2.5rem;
+  text-align: center;
+}
+
+.site-footer p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.site-footer a {
+  color: var(--text-muted);
+  text-decoration: underline;
+}
